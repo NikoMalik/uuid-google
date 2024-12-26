@@ -145,51 +145,6 @@ func Parse(s string) (UUID, error) {
 	return uuid, nil
 }
 
-func ParseFast(s string) (UUID, error) {
-	var uuid UUID
-	switch len(s) {
-	// xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-	case 36:
-
-	// urn:uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-	case 36 + 9:
-		if !strings.EqualFold(s[:9], "urn:uuid:") {
-			return uuid, URNPrefixError{s[:9]}
-		}
-		s = s[9:]
-
-	// {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}
-	case 36 + 2:
-		s = s[1:]
-
-	// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-	case 32:
-		var ok bool
-		for i := range uuid {
-			uuid[i], ok = xtob(s[i*2], s[i*2+1])
-			if !ok {
-				return uuid, ErrInvalidUUIDFormat
-			}
-		}
-		return uuid, nil
-	default:
-		return uuid, invalidLengthError{len(s)}
-	}
-
-	for i, j := 0, 0; i < 16; i++ {
-		v1, ok1 := xtob(s[j], s[j+1])
-		if !ok1 {
-			return uuid, ErrInvalidUUIDFormat
-		}
-		uuid[i] = v1
-		j += 2
-		if j == 8 || j == 13 || j == 18 || j == 23 {
-			j++
-		}
-	}
-	return uuid, nil
-}
-
 // ParseBytes is like Parse, except it parses a byte slice instead of a string.
 func ParseBytes(b []byte) (UUID, error) {
 	var uuid UUID
